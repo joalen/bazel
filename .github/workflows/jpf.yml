@@ -1,0 +1,76 @@
+name: JPF Runner
+
+on:
+  push:
+
+jobs:
+  run-jpf:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        ref: 0e7c0fb91eb6d6fd0f7a4e4bddf734569a9dd3b3
+
+    - name: Set up Bazel 
+      uses: philwo/actions-setup-bazel@v3 
+      with:
+        bazel-version: '7.1.1'
+  
+    - name: Set up JDK 17 for project
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Build project with JDK 17
+      run: bazel build //src:bazel
+
+    - name: Set up JDK 11 for JPF
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+        cache: maven
+
+    - name: Clone and build jpf-core
+      run: |
+        git clone https://github.com/javapathfinder/jpf-core.git /tmp/jpf-core
+        cd /tmp/jpf-core
+        ./gradlew buildJars
+
+    - name: Run JPF on JAR files
+      run: |
+        #!/bin/bash
+
+        # Set the current working directory
+        directory=$(pwd)
+
+        # Define the path to the RunJPF.jar file
+        runjpf_jar="/tmp/jpf-core/build/RunJPF.jar"
+
+        # Find all .jar files in the specified directory and its subdirectories, excluding those with "SNAPSHOT" in the name
+        jar_files=$(find "$directory" -type f -name "*.jar")
+
+        # Loop through each .jar file found
+        for jar_file in $jar_files; 
+        do
+            # Extract the directory containing the .jar file
+            jar_dir=$(dirname "$jar_file")
+            
+            # Extract the main class from the jar's manifest
+            main_class=$(unzip -p "$jar_file" META-INF/MANIFEST.MF | grep -i 'Main-Class' | awk -F': ' '{print $2}' | tr -d '\r')
+
+            if [ -z "$main_class" ]; then
+                echo "Main class not found in $jar_file, skipping..."
+                continue
+            fi
+            
+            # Construct the command
+            command="java -jar $runjpf_jar +classpath=$jar_file $main_class"
+            
+            # Execute the command
+            echo "Executing $command"
+            $command
+        done
