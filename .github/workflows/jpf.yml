@@ -13,10 +13,16 @@ jobs:
       with:
         ref: 0e7c0fb91eb6d6fd0f7a4e4bddf734569a9dd3b3
 
-    - name: Set up Bazel 
-      uses: philwo/actions-setup-bazel@v3 
-      with:
-        bazel-version: '7.1.1'
+    - name: Install Bazel 7.1.1
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y apt-transport-https curl gnupg
+        curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor >bazel-archive-keyring.gpg
+        sudo mv bazel-archive-keyring.gpg /usr/share/keyrings
+        echo "deb [arch=amd64 signed-by=/usr/share/keyrings/bazel-archive-keyring.gpg] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
+        sudo apt-get update
+        sudo apt-get install -y bazel-7.1.1
+        sudo apt-get upgrade bazel
   
     - name: Set up JDK 17 for project
       uses: actions/setup-java@v3
