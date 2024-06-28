@@ -36,8 +36,10 @@ jobs:
         brew update
         brew unlink bazelisk
         brew install --cask brewlet
-        brew install bazel
-  
+        
+        curl -LO https://releases.bazel.build/7.1.1/release/bazel-7.1.1-installer-darwin-x86_64.sh
+        chmod +x bazel-7.1.1-installer-darwin-x86_64.sh
+        ./bazel-7.1.1-installer-darwin-x86_64.sh --user
         
     - name: Set up JDK 17 for project
       uses: actions/setup-java@v3
