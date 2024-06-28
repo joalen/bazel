@@ -31,7 +31,10 @@ jobs:
 
     - name: Install Bazel 7.1.1 (macOS)
       if: runner.os == 'macOS'
-      run: brew install brew install bazel
+      run: | 
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        brew update
+        brew install brew install bazel
         
     - name: Set up JDK 17 for project
       uses: actions/setup-java@v3
