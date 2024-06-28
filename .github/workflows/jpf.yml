@@ -35,7 +35,7 @@ jobs:
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
         brew update
         brew install --cask brewlet
-        brew install brew install bazel
+        brew install bazel
   
         
     - name: Set up JDK 17 for project
